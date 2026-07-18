@@ -1,0 +1,99 @@
+import java.sql.*;
+
+public class StudentJDBC {
+    public static void main(String[] args) {
+
+        String url = "jdbc:mysql://localhost:3306/test";
+        String user = "root";
+        String password = "root";
+
+        try {
+            // Load JDBC Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish Connection
+            Connection con = DriverManager.getConnection(url, user, password);
+
+            // Create Table
+            Statement stmt = con.createStatement();
+            String createTable = "CREATE TABLE IF NOT EXISTS Student ("
+                    + "rollno INT PRIMARY KEY,"
+                    + "name VARCHAR(50),"
+                    + "address VARCHAR(100))";
+            stmt.executeUpdate(createTable);
+            System.out.println("Student table created successfully.");
+
+            // Insert Initial Records
+            stmt.executeUpdate("INSERT INTO Student VALUES(1,'Rahul','Chennai')");
+            stmt.executeUpdate("INSERT INTO Student VALUES(2,'Anitha','Bangalore')");
+            stmt.executeUpdate("INSERT INTO Student VALUES(3,'Kiran','Hyderabad')");
+
+            // Display Records using PreparedStatement
+            PreparedStatement psSelect = con.prepareStatement("SELECT * FROM Student");
+
+            System.out.println("\nInitial Student Records:");
+            ResultSet rs = psSelect.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getInt("rollno") + "\t"
+                        + rs.getString("name") + "\t"
+                        + rs.getString("address"));
+            }
+
+            // Insert Two Records using PreparedStatement
+            PreparedStatement psInsert = con.prepareStatement(
+                    "INSERT INTO Student VALUES(?,?,?)");
+
+            psInsert.setInt(1, 4);
+            psInsert.setString(2, "Priya");
+            psInsert.setString(3, "Coimbatore");
+            psInsert.executeUpdate();
+
+            psInsert.setInt(1, 5);
+            psInsert.setString(2, "Arun");
+            psInsert.setString(3, "Madurai");
+            psInsert.executeUpdate();
+
+            System.out.println("\nTwo records inserted successfully.");
+
+            // Update One Record
+            PreparedStatement psUpdate = con.prepareStatement(
+                    "UPDATE Student SET address=? WHERE rollno=?");
+
+            psUpdate.setString(1, "Salem");
+            psUpdate.setInt(2, 2);
+            psUpdate.executeUpdate();
+
+            System.out.println("One record updated successfully.");
+
+            // Delete One Record
+            PreparedStatement psDelete = con.prepareStatement(
+                    "DELETE FROM Student WHERE rollno=?");
+
+            psDelete.setInt(1, 3);
+            psDelete.executeUpdate();
+
+            System.out.println("One record deleted successfully.");
+
+            // Display Final Records
+            System.out.println("\nFinal Student Records:");
+            rs = psSelect.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getInt("rollno") + "\t"
+                        + rs.getString("name") + "\t"
+                        + rs.getString("address"));
+            }
+
+            // Close Resources
+            rs.close();
+            psSelect.close();
+            psInsert.close();
+            psUpdate.close();
+            psDelete.close();
+            stmt.close();
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
